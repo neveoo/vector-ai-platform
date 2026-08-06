@@ -48,19 +48,14 @@ def _classify_with_trained_model(text: str) -> tuple[str, float, str]:
 
 
 def _classify_with_llm_prompt(text: str) -> tuple[str, float, str]:
-    from anthropic import Anthropic
+    from app.services.llm_client import call_llm
 
-    client = Anthropic(api_key=settings.anthropic_api_key)
     prompt = (
         "Classify the following document into exactly one of these categories: "
         f"{', '.join(CANDIDATE_CLASSES)}.\n\n"
         "Respond with only a JSON object: {\"class\": \"...\", \"confidence\": 0.0-1.0}\n\n"
         f"Document text (truncated):\n{text[:4000]}"
     )
-    response = client.messages.create(
-        model=settings.chat_model,
-        max_tokens=100,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    result = json.loads(response.content[0].text)
+    response_text = call_llm(prompt, max_tokens=100)
+    result = json.loads(response_text)
     return result["class"], float(result["confidence"]), "llm_prompt"

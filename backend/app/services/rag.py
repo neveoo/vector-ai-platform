@@ -91,9 +91,8 @@ def answer_question(db: Session, question: str) -> dict:
             "grounded": False,
         }
 
-    from anthropic import Anthropic
+    from app.services.llm_client import call_llm
 
-    client = Anthropic(api_key=settings.anthropic_api_key)
     context_block = "\n\n".join(
         f"[Source {i+1}: {r.filename}]\n{r.content}" for i, r in enumerate(strong_matches)
     )
@@ -102,14 +101,10 @@ def answer_question(db: Session, question: str) -> dict:
         "If the sources don't fully answer the question, say so explicitly rather than guessing.\n\n"
         f"Sources:\n{context_block}\n\nQuestion: {question}"
     )
-    response = client.messages.create(
-        model=settings.chat_model,
-        max_tokens=1000,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    answer_text = call_llm(prompt, max_tokens=1000)
 
     return {
-        "answer": response.content[0].text,
+        "answer": answer_text,
         "citations": [
             {"document_id": str(r.document_id), "filename": r.filename, "similarity": round(r.similarity, 3)}
             for r in strong_matches

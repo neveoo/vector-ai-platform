@@ -40,10 +40,13 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
 
     # AI providers
+    llm_provider: str = "gemini"  # "gemini" (free tier) or "anthropic" (paid, higher quality)
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"  # free-tier eligible
     anthropic_api_key: str | None = None
+    chat_model: str = "claude-sonnet-4-6"  # only used when llm_provider == "anthropic"
     embedding_model_name: str = "BAAI/bge-small-en-v1.5"  # local, free, no API cost
     embedding_dimensions: int = 384  # must match embedding_model_name's output size
-    chat_model: str = "claude-sonnet-4-6"
 
     # RAG tuning
     chunk_size_tokens: int = 400
